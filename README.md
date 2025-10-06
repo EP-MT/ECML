@@ -8,7 +8,7 @@ if youre looking for speed commands and efficiency this is a shell for you
 ## Authors
 
 - [@EP_MT](https://github.com/EP-MT)
-- By Ethan Portelli in SMC Malta
+- By Ethan Portelli
 ## Installation
 
 Install ECML Directly from this Repo
