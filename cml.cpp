@@ -8,57 +8,56 @@
 #include <csignal>
 #include <map>
 #include <functional>
-#include <python3.12/Python.h>
 #include <conio.h>
+#include <thread> 
+#include "json.hpp"
+#include "rw.hpp"
+#include "pac.hpp"
 
 namespace fs = std::filesystem;
 using def = std::function<void()>;
+using json = nlohmann::json;
+bool login_successful = false;
 
-void LS(const std::string& cur_dir)
+void ListDir(const std::string& cur_dir)
 {
     try{
         std::cout << "Listing files and directories in: " << cur_dir << "\n";
         for(const auto& entry : fs::directory_iterator(cur_dir)){
-            std::cout << (entry.is_directory() ? "[DIR] " : "[FILE] ")
+            std::cout << (entry.is_directory() ? "[DIR] " : "[FILE]")
                       << entry.path().filename().string() << std::endl;
         }
     }
-    
+
     catch(fs::filesystem_error& e){
         std::cerr << "Error: " << e.what() << std::endl;
     }
 }
 
-std::string CD(const std::string& cur_dir){
-
+std::string ChangeDir(const std::string& cur_dir){
     std::string newpath;
-    
-    try{
-        std::cin >> newpath;
+    std::cin >> newpath;
 
-        try
-        {
-            fs::current_path(newpath);
-            return fs::current_path().string();
 
-        }
-        catch(const std::exception& e)
-        {
-            std::cerr << "Error: " << e.what() << std::endl;
-            return cur_dir;
-
-        }
+    if(newpath.empty()){
+        std::cout << "Invalid Path" << std::endl;
+        return cur_dir;
     }
 
-    catch(const fs::filesystem_error& e){
+
+    try{
+        fs::current_path(newpath);
+        return fs::current_path().string();
+    }
+
+    catch(const std::exception& e){
         std::cerr << "Error: " << e.what() << std::endl;
         return cur_dir;
     };
-
-
 }
+    
 
-void MK(){
+void Make(){
     std::string choice;
     std::string name;
 
@@ -108,35 +107,39 @@ void MK(){
 
 }
 
-void DEL(){
+void Delete(){
     std::string name;
     bool exists = false;
 
     std::cin >> name;
-
-    if(!fs::exists(name)){
-        std::cout << "File or Directory does not exists:" << name << std::endl;
-    }
-
-    try{
-        if(fs::is_directory(name)){
-            fs::remove_all(name);
-            std::cout << "Directory successfully Removed:" << name << std::endl;
+    if(login_successful){
+        if(!fs::exists(name)){
+            std::cout << "File or Directory does not exists:" << name << std::endl;
         }
 
-        else{
-            fs::remove(name);
-            std::cout << "File Successfully removed:" << name << std::endl;
+        try{
+            if(fs::is_directory(name)){
+                fs::remove_all(name);
+                std::cout << "Directory successfully Removed:" << name << std::endl;
+            }
+
+            else{
+                fs::remove(name);
+                std::cout << "File Successfully removed:" << name << std::endl;
+            }
         }
+
+        catch(const fs::filesystem_error& e){
+            std::cerr << "Error: " << e.what() << std::endl;
+        };
     }
 
-    catch(const fs::filesystem_error& e){
-        std::cerr << "Error: " << e.what() << std::endl;
-    };
-
+    else{
+        std::cout << "You do not have Root access" << std::endl;
+    }
 }
 
-void RENAME(const std::string& cur_dir){
+void Rename(const std::string& cur_dir){
     std::string name;
     std::string new_name;
     bool exists = false;
@@ -163,7 +166,7 @@ void RENAME(const std::string& cur_dir){
 
 }
 
-void HELP() {
+void Help() {
     std::cout << "\nAvailable Commands:\n"
               << "exit - Exit the program\n"
               << "cls - Clear the screen\n"
@@ -181,31 +184,7 @@ void HELP() {
               << "lgn - Logs in a user\n";
 }
 
-void CAT(){
-    std::string file;
-    std::string contents;
-
-    std::cin >> file;
-
-    if(fs::exists(file)){
-        std::ifstream rfile(file);
-
-        while(getline(rfile, contents)){
-            std::cout << contents << std::endl;
-        }
-
-        rfile.close();
-    }
-
-    else{
-        std::cerr << "This file does not exist" << file << std::endl;
-    }
-
-}
-
-int pid = 0;
-
-int START(){
+void START(){
     std::string file;
     std::cin >> file;
 
@@ -214,185 +193,139 @@ int START(){
     if(fs::exists(filec)){
         if (access(filec, X_OK) == 0){
             try{
-                pid = getpid();
                 const char* argv[] = {file.c_str(), nullptr};
                 execv(file.c_str(), const_cast<char* const*>(argv));
-                return pid;
             }
 
             catch(const fs::filesystem_error& e){
                 std::cerr << "Error: " << e.what() << std::endl;
-                return 0;
             };            
         }
 
         else{
             std::cout << "This File is not an executable:" << file << std::endl;
-            return 0;
         }
     }
 
     else{
         std::cout << "This is file does not exist:" << file << std::endl;
-        return 0;
     }
 
-}
-
-void KILL(){
-
-}
-
-void ECHO(){
-    std::string file;
-    std::string Wcontents;
-
-    std::cin >> file;
-
-    if(fs::exists(file)){
-        std::fstream wfile(file, std::ios::app);
-
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        
-        while(true){
-            int key = _getch();
-            if(key == 27){
-                break;
-            }
-            
-            if(key == 13){
-                wfile << std::endl;
-                std::cout << std::endl;
-            }
-            
-        wfile << static_cast<char>(key);
-        std::cout << static_cast<char>(key);
-    }
-        wfile.close();
-    }
-
-    else{
-        std::cerr << "This file does not exist" << file << std::endl;
-    }
 }
 
 void ADDUSR(){
-    std::string user;
-    std::string pass;
+    std::string user, pass;
 
     std::cout << "Write Your Username here:";
     std::cin >> user;
     std::cout << "Write your password here:";
     std::cin >> pass;
 
-    std::fstream usrs("usrs.csv", std::ios::app);
+    std::ifstream usrs("usrs.json");
 
-    usrs << "\n" << user << "," << pass << std::endl;
+    json credentials;
+    usrs >> credentials;
     usrs.close();
+
+    if(!credentials.contains("users")){
+        credentials["users"] = json::array();
+    }
+
+    credentials["users"].push_back({{"username", user}, {"password", pass}});
+
+    std::ofstream output_file("usrs.json");
+
+    output_file << credentials.dump(4);
+    output_file.close();
 }
 
 void LOGN(){
-    std::string user;
-    std::string pass;
-
-    std::string usrs;
-    std::string spass;
-    bool login_successful = false;
-
+    std::string user, pass;
     std::cout << "Write Your Username here:";
     std::cin >> user;
     std::cout << "Write your password here:";
     std::cin >> pass;
 
-    std::ifstream usrf("usrs.csv");
+    if(fs::exists("usrs.json")){
+        std::ifstream usrs("usrs.json");
+        json credentials;
+        usrs >> credentials;
+        usrs.close();
 
-    while (getline(usrf, usrs, ',') && getline(usrf, spass)) {
-        if (!spass.empty() && spass.back() == '\n') {
-            spass.pop_back();
-        }
-
-        else if (usrs == user && spass == pass) {
-            login_successful = true;
-        }
-    }
-
-    if (login_successful) {
-        std::cout << "Login successful!" << std::endl;
-    } else {
-        std::cout << "Invalid username or password." << std::endl;
-    }
-}
-
-void DELUSR() {
-    std::fstream usrs("usrs.csv", std::ios::in);
-    std::string s;
-
-    while(getline(usrs, s)){
-        std::cout << s << std::endl;
-    }
-
-    std::string user;
-    
-    if(fs::exists("usrs.csv")){
-        std::string temp = "temp.csv";
-        std::ofstream tempf(temp);
-
-        std::cout << "Write the username you want to delete:";
-        std::cin >> user;
-
-        usrs.seekg(0, std::ios::beg);
-
-        while(getline(usrs, s)){
-            if(s.find(user) == std::string::npos){
-                tempf << s << std::endl;
+        if(credentials.contains("users")){
+            for(const auto& u : credentials["users"]){
+                if(u["username"] == user && u["password"] == pass)
+                    std::cout << "Root login sucessful." << std::endl;
+                    login_successful = true;
             }
         }
 
-        usrs.close();
-        tempf.close();
-
-        fs::remove("usrs.csv");
-        fs::rename(temp, "usrs.csv");
-    }
-}
-
-void PYSCRIPT(){
-    std::string script;
-    std::cin >> script;
-
-    try{
-        if(fs::exists(script)){
-            Py_Initialize;
-            std::ifstream script_file(script);
-            std::string script_content((std::istreambuf_iterator<char>(script_file)),std::istreambuf_iterator<char>());
-            Py_Finalize;
+        else
+        {
+            std::cout << "Wrong usrename or password" << std::endl;
         }
     }
 
-    catch(const fs::filesystem_error& e){
-        std::cerr << "Error: " << e.what() << std::endl;
-    };
+    else{
+        std::cout << "You cant login because no credentials have been made yet" << std::endl << "Please you the +usr command to make credentials" << std::endl;
+    }
+
 }
+
+void DELUSR(){
+    std::string user, pass;
+    std::cout << "Write Your Username here:";
+    std::cin >> user;
+    std::cout << "Write your password here:";
+    std::cin >> pass;
+    std::ifstream usrs("usrs.json");
+
+    json credentials;
+     if(credentials.contains("users")){
+            for(const auto& u : credentials["users"]){
+                if(u["username"] == user && u["password"] == pass){
+
+                    credentials["user"] = nullptr;
+                    credentials["password"] = nullptr;
+            
+                    std::ofstream output("usrs.json");
+                    output << credentials.dump(4);
+                    output.close();
+            
+                    std::cout << "user successfully deleted" << std::endl;
+                }
+            
+                else
+                {
+                    std::cout << "You Entered a wrong password or username." << std::endl;
+                }
+            }
+        }
+}
+
 int main()
 {
-    int Pidbuffer;
     std::cout << "Welcome to Ethans CommandLine(cml)!\n";
     std::string cur_dir = fs::current_path().string();
 
+    ReadWrite rw;
+    req rq;
+
     std::map<std::string, def> commands = {
-        {"lf", [&]() { LS(cur_dir); }},
-        {"cd", [&]() { cur_dir = CD(cur_dir); }},
-        {"mk", MK},
-        {"rm", DEL},
-        {"rnm", [&]() { RENAME(cur_dir); }},
-        {"help", HELP},
-        {"rd", CAT},
-        {"wr", ECHO},
+        {"lf", [&]() { ListDir(cur_dir); }},
+        {"cd", [&]() { cur_dir = ChangeDir(cur_dir); }},
+        {"mk", Make},
+        {"rm", Delete},
+        {"rnm", [&]() { Rename(cur_dir); }},
+        {"help", Help},
+        {"rd", [&]() {rw.Read();}},
+        {"wr", [&]() {rw.Write();}},
         {"run", START},
         {"+usr", ADDUSR},
         {"-usr", DELUSR},
         {"lgn", LOGN},
-        {"cls", []() { std::cout << std::string(50, '\n'); }},
+        {"cls", [&]() { std::cout << std::string(50, '\n'); }},
+        {"req", [&]() {rq.Request();}}
     };
 
     bool running = true;
@@ -401,16 +334,20 @@ int main()
     while(running){
         std::cout << cur_dir << ">";
         std::cin >> choice;
-
+        
         if (choice == "exit") {
             std::cout << "Closing program.\n";
             running = false;
-        } else if (commands.find(choice) != commands.end()) {
+        } 
+        
+        else if (commands.find(choice) != commands.end()) {
             commands[choice]();
-        } else {
+        } 
+        
+        else {
             std::cout << "Invalid choice! Please choose a valid option.\n";
         }
-    }
+    };
 
     return 0;
 }
