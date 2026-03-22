@@ -1,170 +1,12 @@
-#include <iostream>
-#include <filesystem>
-#include <fstream>
-#include <string>
-#include <cstdlib>
-#include <stdexcept>
-#include <unistd.h>
-#include <csignal>
-#include <map>
-#include <functional>
-#include <conio.h>
-#include <thread> 
+#include "main.hpp"
 #include "json.hpp"
 #include "rw.hpp"
 #include "pac.hpp"
+#include "usrAuth.hpp"
+#include "mdr.hpp"
 
 namespace fs = std::filesystem;
 using def = std::function<void()>;
-using json = nlohmann::json;
-bool login_successful = false;
-
-void ListDir(const std::string& cur_dir)
-{
-    try{
-        std::cout << "Listing files and directories in: " << cur_dir << "\n";
-        for(const auto& entry : fs::directory_iterator(cur_dir)){
-            std::cout << (entry.is_directory() ? "[DIR] " : "[FILE]")
-                      << entry.path().filename().string() << std::endl;
-        }
-    }
-
-    catch(fs::filesystem_error& e){
-        std::cerr << "Error: " << e.what() << std::endl;
-    }
-}
-
-std::string ChangeDir(const std::string& cur_dir){
-    std::string newpath;
-    std::cin >> newpath;
-
-
-    if(newpath.empty()){
-        std::cout << "Invalid Path" << std::endl;
-        return cur_dir;
-    }
-
-
-    try{
-        fs::current_path(newpath);
-        return fs::current_path().string();
-    }
-
-    catch(const std::exception& e){
-        std::cerr << "Error: " << e.what() << std::endl;
-        return cur_dir;
-    };
-}
-    
-
-void Make(){
-    std::string choice;
-    std::string name;
-
-    std::cout << "How would you like to create your file?\n"
-              << ".txt\n"
-              << "directory\n";    
-
-    std::cin >> choice;
-
-    std::cout << "Enter Name:";
-    std::cin >> name;
-
-    try{
-        if(choice == "txt"){
-            std::ofstream newfile(name + ".txt");
-            newfile << "";
-            newfile.close();
-
-            if(newfile){
-                std::cout << "new text file created:" << name << std::endl;
-            }
-
-            else{
-                std::cout << "Error creating file:" << name << std::endl;
-            }
-        }
-
-        else if(choice == "folder"){
-            if(fs::create_directory(name)){
-                std::cout << "new directory created:" << name << std::endl;
-            }
-
-            else{
-                std::cout << "Error creating directory:" << name << std::endl;
-            }
-        }
-
-        else{
-            std::cout << "Invalid choice! Please choose a valid option.\n";  
-        }
-    }
-
-    catch(const fs::filesystem_error& e){
-        std::cerr << "Error: " << e.what() << std::endl;
-    };
-
-
-}
-
-void Delete(){
-    std::string name;
-    bool exists = false;
-
-    std::cin >> name;
-    if(login_successful){
-        if(!fs::exists(name)){
-            std::cout << "File or Directory does not exists:" << name << std::endl;
-        }
-
-        try{
-            if(fs::is_directory(name)){
-                fs::remove_all(name);
-                std::cout << "Directory successfully Removed:" << name << std::endl;
-            }
-
-            else{
-                fs::remove(name);
-                std::cout << "File Successfully removed:" << name << std::endl;
-            }
-        }
-
-        catch(const fs::filesystem_error& e){
-            std::cerr << "Error: " << e.what() << std::endl;
-        };
-    }
-
-    else{
-        std::cout << "You do not have Root access" << std::endl;
-    }
-}
-
-void Rename(const std::string& cur_dir){
-    std::string name;
-    std::string new_name;
-    bool exists = false;
-
-    std::cin >> name;
-
-    if(!fs::exists(name)){
-        std::cout << "File or Directory does not exists:" << name << std::endl;
-    }
-
-    std::cout << "What is the new name for the file or directory:";
-    std::cin >> new_name;
-
-    std::string name_dir = fs::current_path().string() + "/" + name;
-    std::string newname_dir = fs::current_path().string() + "/" + new_name;
-    try{
-        fs::rename(name_dir, newname_dir);
-        std::cout << "The File or directory has been renamed to:" << new_name << std::endl;
-    }
-
-    catch(const fs::filesystem_error& e){
-        std::cerr << "Error: " << e.what() << std::endl;
-    };
-
-}
 
 void Help() {
     std::cout << "\nAvailable Commands:\n"
@@ -213,96 +55,6 @@ void START(){
 
 }
 
-void ADDUSR(){
-    std::string user, pass;
-
-    std::cout << "Write Your Username here:";
-    std::cin >> user;
-    std::cout << "Write your password here:";
-    std::cin >> pass;
-
-    std::ifstream usrs("usrs.json");
-
-    json credentials;
-    usrs >> credentials;
-    usrs.close();
-
-    if(!credentials.contains("users")){
-        credentials["users"] = json::array();
-    }
-
-    credentials["users"].push_back({{"username", user}, {"password", pass}});
-
-    std::ofstream output_file("usrs.json");
-
-    output_file << credentials.dump(4);
-    output_file.close();
-}
-
-void LOGN(){
-    std::string user, pass;
-    std::cout << "Write Your Username here:";
-    std::cin >> user;
-    std::cout << "Write your password here:";
-    std::cin >> pass;
-
-    if(fs::exists("usrs.json")){
-        std::ifstream usrs("usrs.json");
-        json credentials;
-        usrs >> credentials;
-        usrs.close();
-
-        if(credentials.contains("users")){
-            for(const auto& u : credentials["users"]){
-                if(u["username"] == user && u["password"] == pass)
-                    std::cout << "Root login sucessful." << std::endl;
-                    login_successful = true;
-            }
-        }
-
-        else
-        {
-            std::cout << "Wrong usrename or password" << std::endl;
-        }
-    }
-
-    else{
-        std::cout << "You cant login because no credentials have been made yet" << std::endl << "Please you the +usr command to make credentials" << std::endl;
-    }
-
-}
-
-void DELUSR(){
-    std::string user, pass;
-    std::cout << "Write Your Username here:";
-    std::cin >> user;
-    std::cout << "Write your password here:";
-    std::cin >> pass;
-    std::ifstream usrs("usrs.json");
-
-    json credentials;
-     if(credentials.contains("users")){
-            for(const auto& u : credentials["users"]){
-                if(u["username"] == user && u["password"] == pass){
-
-                    credentials["user"] = nullptr;
-                    credentials["password"] = nullptr;
-            
-                    std::ofstream output("usrs.json");
-                    output << credentials.dump(4);
-                    output.close();
-            
-                    std::cout << "user successfully deleted" << std::endl;
-                }
-            
-                else
-                {
-                    std::cout << "You Entered a wrong password or username." << std::endl;
-                }
-            }
-        }
-}
-
 int main()
 {
     std::cout << "Welcome to Ethans CommandLine(cml)!\n";
@@ -310,22 +62,25 @@ int main()
 
     ReadWrite rw;
     req rq;
+    UAuth ua;
+    MakeDelete mdr;
 
-    std::map<std::string, def> commands = {
-        {"lf", [&]() { ListDir(cur_dir); }},
-        {"cd", [&]() { cur_dir = ChangeDir(cur_dir); }},
-        {"mk", Make},
-        {"rm", Delete},
-        {"rnm", [&]() { Rename(cur_dir); }},
+    std::unordered_map<std::string, def> commands = {
+        {"lf", [&]() {mdr.ListDir(cur_dir); }},
+        {"cd", [&]() {cur_dir = mdr.ChangeDir(cur_dir); }},
+        {"mk", [&]() {mdr.Make();}},
+        {"rm", [&]() {mdr.Delete();}},
+        {"rnm", [&]() {mdr.Rename(cur_dir); }},
         {"help", Help},
         {"rd", [&]() {rw.Read();}},
         {"wr", [&]() {rw.Write();}},
         {"run", START},
-        {"+usr", ADDUSR},
-        {"-usr", DELUSR},
-        {"lgn", LOGN},
+        {"+usr", [&]() {ua.ADDUSR();}},
+        {"-usr", [&]() {ua.DELUSR();}},
+        {"lgn", [&]() {ua.LOGN();}},
         {"cls", [&]() { std::cout << std::string(50, '\n'); }},
-        {"req", [&]() {rq.Request();}}
+        {"req", [&]() {rq.Request();}},
+        {"check", [&]() {rq.parseWeb();}}
     };
 
     bool running = true;

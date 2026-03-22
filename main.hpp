@@ -1,0 +1,12 @@
+#include <iostream>
+#include <filesystem>
+#include <fstream>
+#include <string>
+#include <cstdlib>
+#include <stdexcept>
+#include <unistd.h>
+#include <csignal>
+#include <unordered_map>
+#include <functional>
+#include <conio.h>
+#include <thread>

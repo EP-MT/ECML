@@ -65,7 +65,7 @@ class ReadWrite
                 std::cout << static_cast<char>(key);
             }
             
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            std::this_thread::sleep_for(std::chrono::milliseconds(20));
             wfile.close();
         }
 };
