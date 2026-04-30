@@ -1,9 +1,4 @@
 #include "main.hpp"
-#include "json.hpp"
-#include "rw.hpp"
-#include "pac.hpp"
-#include "usrAuth.hpp"
-#include "mdr.hpp"
 
 namespace fs = std::filesystem;
 using def = std::function<void()>;
@@ -11,7 +6,7 @@ using def = std::function<void()>;
 void Help() {
     std::cout << "\nAvailable Commands:\n"
               << "exit - Exit the program\n"
-              << "cls - Clear the screen\n"
+              << "cls  - Clear the screen\n"
               << "lf   - List all files and directories\n"
               << "cd   - Change directories\n"
               << "mk   - Makes a file or directory\n"
@@ -23,7 +18,7 @@ void Help() {
               << "help - Show this help message\n"
               << "+usr - Adds a user to the program\n"
               << "-usr - Deletes a user from the program\n"
-              << "lgn - Logs in a user\n";
+              << "lgn  - Logs in a user\n";
 }
 
 void START(){

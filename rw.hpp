@@ -57,7 +57,7 @@ class ReadWrite
                 if(key == 8){
                     if(!buffer.empty()){
                         buffer.pop_back();
-                        std::cout << "\b \b";
+                        std::cout << "\b";
                     }
                 }
                 

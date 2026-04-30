@@ -136,14 +136,21 @@ class MakeDelete{
         std::string ChangeDir(const std::string& cur_dir){
             std::string newpath;
             std::cin >> newpath;
-
-
+            std::string Delim = "\\";
+            
             if(newpath.empty()){
                 std::cout << "Invalid Path" << std::endl;
                 return cur_dir;
             }
+            
+            if(newpath == "//"){
+                int position = cur_dir.rfind(Delim);
 
-
+                std::string prepath = fs::current_path().string().erase(position);
+                fs::current_path(prepath);
+                return fs::current_path().string();
+            }
+            
             try{
                 fs::current_path(newpath);
                 return fs::current_path().string();

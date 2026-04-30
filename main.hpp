@@ -10,3 +10,8 @@
 #include <functional>
 #include <conio.h>
 #include <thread>
+#include "json.hpp"
+#include "rw.hpp"
+#include "pac.hpp"
+#include "usrAuth.hpp"
+#include "mdr.hpp"
