@@ -1,28 +1,47 @@
 #include <iostream>
 #include <fstream>
-#include <conio.h>
 #include <filesystem>
 
 namespace fs = std::filesystem;
 
 int main(){
-    std::string file = "test.txt";
-    std::fstream wfile(file, std::ios::app);
-    std::string buffer;
-    std::string CurDir = fs::current_path().string();
-    CurDir = "C:\\Users\\porte\\ALLCODE";
-      
+    std::string file;
+    
     while(true){
-        int key = _getch();
+        std::cin >> file;
 
-        std::cout << key;
+        if(fs::exists(file)){
+            buffer(file);
+        }
+        else{
+            std::cout << "file doesnt exist try again" << std::endl;
+        }
+    }
+}
 
-        if(key == 27){
-            break;
+void buffer(std::string UserFile){
+    std::fstream file(UserFile, std::ios::in | std::ios::out);
+    std::string buffer;
+
+    file.clear();
+    file.seekp(0, std::ios::end);
+    char c;
+    while(true){
+        c = std::cin.get();
+
+        if(c == '\b' || c == 127){
+            std::streampos pos = file.tellp();
+            if(pos > 0){
+                file.seekp(pos - 1);
+                file.put(' ');
+                file.seekp(pos - 1);
+                std::cout << "\b \b";
+            }
         }
-        
-        if(key == 65){
-                wfile << "im pressing a" << std::endl;
+        else{
+            file.put(c);
+            std::cout << c;
         }
+        file.flush();
     }
 }
