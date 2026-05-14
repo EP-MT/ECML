@@ -1,9 +1,9 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#define CPPHTTPLIB_OPENSSL_SUPPORT
 #include "httplib.h"
 #include "windows.h"
-#define CPPHTTPLIB_OPENSSL_SUPPORT
 
 const std::string delimArray[5] = {".", "/", "www.", "http://", "https://"};
 std::vector<std::string> output;
@@ -47,7 +47,7 @@ void Request()
 {
     output = parseWeb();
 
-    httplib::SSLCLient client(output[0]);
+    httplib::SSLClient client(output[0]);
     client.enable_server_certificate_verification(false);
 
     auto log_error = [](const httplib::Error &err)
