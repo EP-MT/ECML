@@ -59,6 +59,7 @@ int main()
     req rq;
     UAuth ua;
     MakeDelete mdr;
+    win window;
 
     std::unordered_map<std::string, def> commands = {
         {"lf", [&]() {mdr.ListDir(cur_dir); }},
@@ -81,6 +82,8 @@ int main()
     bool running = true;
     std::string choice;
 
+    window.pullWindow();
+    
     while(running){
         std::cout << cur_dir << ">";
         std::cin >> choice;
