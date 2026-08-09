@@ -1,16 +1,4 @@
 {
     "users": [
-        {
-            "password": "mt",
-            "username": "ep"
-        },
-        {
-            "password": "portelli",
-            "username": "ethan"
-        },
-        {
-            "password": "harrison",
-            "username": "nige"
-        }
     ]
 }

@@ -1,40 +1,51 @@
 
 # ECML
 
-It is a simple shell with shorter comamnds than Bash or Zsh 
-if youre looking for speed commands and efficiency this is a shell for you 
+A simple shell whose whole purpose is to give a platform for you to write commands  that are short and perform well 
 
+Not actually meant to replace powershell or cmd just a quick dev shell that executes with short commands
+
+Done for learning but also for functionality
 
 ## Authors
 
 - [@EP_MT](https://github.com/EP-MT)
 - By Ethan Portelli
+- Made at my time in G.F. Abela Junior College
 ## Installation
 
-Install ECML Directly from this Repo
+Git clone repo or install the ECML folder from github
     
 ## How To Run
 
-To run ECML just install the cml.exe and run it. Thats it.
-
-
+Run node comes from ECML.exe
 
 ## Support
 
-For support or suggested improvements contact portelli.ethan@gmail.com and I will get back to you as soon as I can :)
+This is an active repo and am updating the source code until I find it complete
+
+If there are any suggestions, improvements. Send an email: portelli.ethan@gmail.com 
+
+Any bugs or issues just pull an issue from github itself ill see what I can do to help :)
 
 ## Customization & Docs
 
-- You can install the C++ file directly if you want to change or add your own functions and features .
+- Of course its completely open source and feel free to add on to the shell with whatever you want 
 
-- just make sure to add it to the commands <map> .
+- How i implemented functions was through Cogs and inside them I turned the whole thing into a class so just add whatever you want to add a cog or add into a cog
 
-- if you need help running functions just type help and the list of functions will pop up.
+- Menu runs from cml.cpp with a hash map so if you need to access a new command add onto the hash map (menu)
 
-- also if you want proper concrete functions that are going to be included in future versions please refer to the support section.
+- ECML is compiled with g++ and the compile args text file is found in src folder
 
+
+## Requirements
+
+Its a windows only program but I'll try to make a Unix build sooner or later
+
+- GLFW3 (For the window / scary black box)
+- GLAD (Same reason)
+- OpenSSL (In house package manager //still in works)
 ## License
 
 [MIT](https://choosealicense.com/licenses/mit/)
-
-

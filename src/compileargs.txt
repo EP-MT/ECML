@@ -1,0 +1,1 @@
+g++ -g ${workspaceFolder}/ECML/src/cml.cpp ${workspaceFolder}/ECML/src/usrAuth.cpp -I ${workspaceFolder}/ECML/lib -I C:/path/to/vcpkg/installed/x64-mingw-static/include -L C:/path/to/vcpkg/installed/x64-mingw-static/lib -lws2_32 -lssl -lcrypto -lcrypt32 -lopengl32 -lglad -lglfw3 -lgdi32 -o ${workspaceFolder}/ECML/bin/ECML.exe -mwindows

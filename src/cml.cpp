@@ -14,40 +14,10 @@ void Help() {
               << "rnm  - Renames a file or Direcroy\n"
               << "rd   - Reads File\n"
               << "wr   - Writes to a file\n"
-              << "run  - Starts a process or a progrm\n"
               << "help - Show this help message\n"
               << "+usr - Adds a user to the program\n"
               << "-usr - Deletes a user from the program\n"
               << "lgn  - Logs in a user\n";
-}
-
-void START(){
-    std::string file;
-    std::cin >> file;
-
-    const char* filec = file.c_str();
-
-    if(fs::exists(filec)){
-        if (access(filec, X_OK) == 0){
-            try{
-                const char* argv[] = {file.c_str(), nullptr};
-                execv(file.c_str(), const_cast<char* const*>(argv));
-            }
-
-            catch(const fs::filesystem_error& e){
-                std::cerr << "Error: " << e.what() << std::endl;
-            };            
-        }
-
-        else{
-            std::cout << "This File is not an executable:" << file << std::endl;
-        }
-    }
-
-    else{
-        std::cout << "This is file does not exist:" << file << std::endl;
-    }
-
 }
 
 int main()
@@ -70,7 +40,6 @@ int main()
         {"help", Help},
         {"rd", [&]() {rw.Read();}},
         {"wr", [&]() {rw.Write();}},
-        {"run", START},
         {"+usr", [&]() {ua.ADDUSR();}},
         {"-usr", [&]() {ua.DELUSR();}},
         {"lgn", [&]() {ua.LOGN();}},

@@ -45,7 +45,7 @@ class UAuth{
             std::cout << "Write your password here:";
             std::cin >> pass;
 
-            if(fs::exists("C:\\Users\\porte\\ALLCODE\\EPOS\\usrs.json")){
+            if(fs::exists(fs::path("ECML/src/usrs.json").string())){
                 std::ifstream usrs("usrs.json");
                 json credentials;
                 usrs >> credentials;
@@ -68,7 +68,6 @@ class UAuth{
             else{
                 std::cout << "You cant login because no credentials have been made yet" << std::endl << "Please you the +usr command to make credentials" << std::endl;
             }
-
         }
 
         void DELUSR(){

@@ -4,7 +4,6 @@
 #include <string>
 #include <cstdlib>
 #include <stdexcept>
-#include <unistd.h>
 #include <csignal>
 #include <unordered_map>
 #include <functional>
