@@ -12,13 +12,7 @@ extern bool login_successful;
 
 class UAuth{
     public:        
-        void ADDUSR(){
-            std::string user, pass;
-
-            std::cout << "Write Your Username here:";
-            std::cin >> user;
-            std::cout << "Write your password here:";
-            std::cin >> pass;
+        void ADDUSR(std::string user, std::string pass){
             json credentials;
 
             std::ifstream usrs("usrs.json");
@@ -38,13 +32,7 @@ class UAuth{
             output_file.close();
         }
 
-        void LOGN(){
-            std::string user, pass;
-            std::cout << "Write Your Username here:";
-            std::cin >> user;
-            std::cout << "Write your password here:";
-            std::cin >> pass;
-
+        void LOGN(std::string user, std::string pass){
             if(fs::exists(fs::path("ECML/src/usrs.json").string())){
                 std::ifstream usrs("usrs.json");
                 json credentials;
@@ -61,21 +49,16 @@ class UAuth{
 
                 else
                 {
-                    std::cout << "Wrong usrename or password" << std::endl;
+                    std::cout << "Wrong usrename or password" << std::endl;//
                 }
             }
 
             else{
-                std::cout << "You cant login because no credentials have been made yet" << std::endl << "Please you the +usr command to make credentials" << std::endl;
+                std::cout << "You cant login because no credentials have been made yet" << std::endl << "Please you the +usr command to make credentials" << std::endl;//
             }
         }
 
-        void DELUSR(){
-            std::string user, pass;
-            std::cout << "Write Your Username here:";
-            std::cin >> user;
-            std::cout << "Write your password here:";
-            std::cin >> pass;
+        void DELUSR(std::string user, std::string pass){
             std::ifstream usrs("usrs.json");
 
             json credentials;
@@ -90,12 +73,12 @@ class UAuth{
                             output << credentials.dump(4);
                             output.close();
                     
-                            std::cout << "user successfully deleted" << std::endl;
+                            std::cout << "user successfully deleted" << std::endl;//
                         }
                     
                         else
                         {
-                            std::cout << "You Entered a wrong password or username." << std::endl;
+                            std::cout << "You Entered a wrong password or username." << std::endl;//
                         }
                     }
                 }

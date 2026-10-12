@@ -26,10 +26,10 @@ int main()
     std::string cur_dir = fs::current_path().string();
 
     ReadWrite rw;
-    req rq;
     UAuth ua;
     MakeDelete mdr;
     win window;
+    //req rq;
 
     std::unordered_map<std::string, def> commands = {
         {"lf", [&]() {mdr.ListDir(cur_dir); }},
@@ -43,15 +43,15 @@ int main()
         {"+usr", [&]() {ua.ADDUSR();}},
         {"-usr", [&]() {ua.DELUSR();}},
         {"lgn", [&]() {ua.LOGN();}},
-        {"cls", [&]() { std::cout << std::string(50, '\n'); }},
-        {"req", [&]() {rq.Request();}},
-        {"check", [&]() {rq.parseWeb();}}
+        {"cls", [&]() { std::cout << std::string(50, '\n'); }}
+        //,{"req", [&]() {rq.Request();}},
+        //{"check", [&]() {rq.parseWeb();}}
     };
 
     bool running = true;
     std::string choice;
 
-    window.pullWindow();
+    window.pullWindow(cur_dir);
     
     while(running){
         std::cout << cur_dir << ">";

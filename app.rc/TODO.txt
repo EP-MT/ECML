@@ -1,0 +1,9 @@
+All inputs are going to be handled through Commands vector in winHandler ******* VIMP for dookie shit inputs required for 90% of all commands
+Aint no one tryna modularise this shit form github'
+
+Include winHandler into all headers and import printText() function
+Note to mention that some strings are kept for logic purposes and std::cout's that are marked with // are ones that have to push to shell window
+Refactor all std::cout to a winHandler Push text:
+-usrAuth
+-mdr
+-rw

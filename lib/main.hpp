@@ -15,3 +15,4 @@
 #include "usrAuth.hpp"
 #include "mdr.hpp"
 #include "winHandler.hpp"
+#include "stb_easy_font.h"

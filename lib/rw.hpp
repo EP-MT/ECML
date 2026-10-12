@@ -2,38 +2,39 @@
 #include <string>
 #include <fstream>
 #include <filesystem>
+#include "winHandler.hpp"
 
 namespace fs = std::filesystem;
+
+win window;
+
+std::vector<std::string> Inputs = window.Commands;
 
 class ReadWrite
 {
     private:
-        std::string path = "";
         std::string contents = "";
 
     public:
-        void Read()
+        void Read(std::string path)
         {
-            std::cin >> path;
-
             if(fs::exists(path)){
                 std::ifstream rfile(path);
         
                 while(getline(rfile, contents)){
-                    std::cout << contents << std::endl;
+                    std::cout << contents << std::endl;//
                 }
         
                 rfile.close();
             }
         
             else{
-                std::cerr << "This file does not exist" << path << std::endl;
+                std::cerr << "This file does not exist" << path << std::endl;//
             }
         }
 
-        void Write()
+        void Write(std::string path)
         {
-            std::cin >> path;
             FuncGetChar(path);
         }
 
@@ -62,7 +63,7 @@ class ReadWrite
                 }
                 
                 buffer += static_cast<char>(key);
-                std::cout << static_cast<char>(key);
+                std::cout << static_cast<char>(key);//
             }
             
             std::this_thread::sleep_for(std::chrono::milliseconds(20));
