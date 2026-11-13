@@ -9,6 +9,8 @@
 #include <functional>
 #include <conio.h>
 #include <thread>
+#include <iomanip>
+#include <sstream>
 #include "json.hpp"
 #include "rw.hpp"
 #include "pac.hpp"

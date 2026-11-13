@@ -11,48 +11,37 @@ class MakeDelete{
         std::string cur_dir = fs::current_path().string();
 
     public:
-        void Make(std::string choice, std::string name){
-            std::cout << "How would you like to create your file?\n"
-                    << ".txt\n"
-                    << "directory\n";
-
-            std::cout << "Enter Name:";
-        
+        void Make(std::string name){
             try{
-                if(choice == "txt"){
-                    std::ofstream newfile(name + ".txt");
-                    newfile << "";
-                    newfile.close();
-        
-                    if(newfile){
-                        std::cout << "new text file created:" << name << std::endl;//
-                    }
-        
-                    else{
-                        std::cout << "Error creating file:" << name << std::endl;//
-                    }
+                std::ofstream newfile(name);
+                newfile << "";
+                newfile.close();
+                if(newfile){
+                    std::cout << "new text file created:" << name << std::endl;//
                 }
-        
-                else if(choice == "folder"){
-                    if(fs::create_directory(name)){
-                        std::cout << "new directory created:" << name << std::endl;//
-                    }
-        
-                    else{
-                        std::cout << "Error creating directory:" << name << std::endl;//
-                    }
-                }
-        
                 else{
-                    std::cout << "Invalid choice! Please choose a valid option.\n"; //
+                    std::cout << "Error creating file:" << name << std::endl;//
                 }
             }
-        
+
+            catch(const fs::filesystem_error& e){
+            std::cerr << "Error: " << e.what() << std::endl;//
+            };
+        }
+
+        void Makedir(std::string name){
+            try{        
+                if(fs::create_directory(name)){
+                    std::cout << "new directory created:" << name << std::endl;//
+                }
+                else{
+                    std::cout << "Error creating directory:" << name << std::endl;//
+                }
+            }
+                
             catch(const fs::filesystem_error& e){
                 std::cerr << "Error: " << e.what() << std::endl;//
             };
-        
-        
         }
         
         void Delete(std::string name){

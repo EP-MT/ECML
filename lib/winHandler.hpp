@@ -2,71 +2,83 @@
 
 #define WINDOW_WIDTH 400
 #define WINDOW_HEIGHT 600
-
 class win{
     private:
-        int CurrSize = 0;
         std::string charQ;
-        int Index = 0;
+        int historyIndex = -1;
         
-        inline void Getch(GLFWwindow* window, unsigned int AlphaNum){
-            charQ.push_back(static_cast<char>(AlphaNum));
-        }
-        
-        inline void SubmitCommand(GLFWwindow* window, int key, int scancode, int action, int mods){
-            if (action == GLFW_PRESS && key == GLFW_KEY_ENTER){
-                if (!charQ.empty()){
-                    Commands.push_back(charQ);
-                    Index = static_cast<int>(Commands.size()) - 1;
-                    charQ.clear();
-                }
+        inline void Getch(GLFWwindow*, unsigned int codepoint){
+            if (codepoint >= 32 && codepoint <= 126) {
+                charQ.push_back(static_cast<char>(codepoint));
+                historyIndex = -1;
             }
         }
         
-        inline void Checkgetch(GLFWwindow* window){
-            if(!charQ.empty()){
-                if(charQ.size() != CurrSize){
-                    CurrSize = charQ.size();
-                }
-            }
-        }
-        
-        inline void ScrollCommands(GLFWwindow* window, std::string pwd){
-            float startY = 50.0f;
-            std::string cmd = Commands.at(Index);
-            
-            if (Commands.empty()){
+        inline void SubmitCommand(GLFWwindow* handle, int key, int, int action, int){
+            if (action != GLFW_PRESS) {
                 return;
             }
-            
-            if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS){
-                if (Index > 0){
-                    Sleep(665);
-                    --Index;
-                    std::string lineToDraw = pwd + " " + cmd;
-                    printText(20.0f, startY, lineToDraw.c_str());
-                    startY += 20.0f;
+
+            if (key == GLFW_KEY_ENTER) {
+                if (!charQ.empty()) {
+                    Commands.push_back(charQ);
+                    pendingCommands.push_back(charQ);
+                    charQ.clear();
+                    historyIndex = -1;
+                }
+            }
+
+            else if (key == GLFW_KEY_BACKSPACE && !charQ.empty()) {
+                charQ.pop_back();
+                historyIndex = -1;
+            }
+
+            else if (key == GLFW_KEY_UP && !Commands.empty()) {
+                if (historyIndex < static_cast<int>(Commands.size()) - 1) {
+                    ++historyIndex;
+                    charQ = Commands[Commands.size() - 1 - historyIndex];
                 }
             }
             
-            else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS){
-                if (Index + 1 < static_cast<int>(Commands.size())){
-                    Sleep(665);
-                    ++Index;
-                    std::string lineToDraw = pwd + " " + cmd;
-                    printText(20.0f, startY, lineToDraw.c_str());
-                    startY += 20.0f;
+            else if (key == GLFW_KEY_DOWN && historyIndex >= 0) {
+                --historyIndex;
+                if (historyIndex < 0) {
+                    charQ.clear();
+                }
+
+                else {
+                    charQ = Commands[Commands.size() - 1 - historyIndex];
                 }
             }
         }
         
     public:
         std::vector<std::string> Commands;
-        inline void pullWindow(std::string cur_dir){
-            glfwInit();
+        
+        inline void pullWindow(std::string& cur_dir, const std::function<bool(const std::string&)>& onCommand){
+            if (!glfwInit()) {
+                std::cerr << "Unable to initialize GLFW\n";
+                return;
+            }
+
             const char* title = "ECML";
             GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, title, nullptr, nullptr);
-            
+            if (window == nullptr) {
+                std::cerr << "Unable to create the ECML window\n";
+                glfwTerminate();
+                return;
+            }
+
+            glfwSetWindowUserPointer(window, this);
+            glfwSetCharCallback(window, [](GLFWwindow* handle, unsigned int codepoint) {
+                static_cast<win*>(glfwGetWindowUserPointer(handle))->Getch(handle, codepoint);
+            });
+            glfwSetKeyCallback(window, [](GLFWwindow* handle, int key, int scancode, int action, int mods) {
+                static_cast<win*>(glfwGetWindowUserPointer(handle))->SubmitCommand(
+                    handle, key, scancode, action, mods
+                );
+            });
+
             glfwMakeContextCurrent(window);
             glClearColor(0.0f, 0.0f, 0.0f, 0.0f); //Sets Background color (R, G, B, Alpha)
             glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -82,11 +94,17 @@ class win{
             while(!glfwWindowShouldClose(window) && glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS)
             {
                 glClear(GL_COLOR_BUFFER_BIT);
-                Checkgetch(window);
-                ScrollCommands(window, cur_dir);                
                 DrawChars(window,cur_dir);
                 glfwSwapBuffers(window);
                 glfwPollEvents();
+
+                for (const std::string& command : pendingCommands) {
+                    if (!onCommand(command)) {
+                        glfwSetWindowShouldClose(window, GLFW_TRUE);
+                        break;
+                    }
+                }
+                pendingCommands.clear();
             }
             
             glfwDestroyWindow(window);
@@ -114,12 +132,18 @@ class win{
             glColor3f(1.0f, 1.0f, 1.0f);
     
             // Print active input queue at position (20, 20)
-            if (!charQ.empty()) {
-                std::string activeLine = pwd + " " + charQ;
-                printText(20.0f, 20.0f, activeLine.c_str());
-            }
+            std::string activeLine = pwd + "> " + charQ;
+            printText(20.0f, 20.0f, activeLine.c_str());
 
-            // Print Commands List
-            ScrollCommands(window, pwd);
+            const std::size_t firstCommand =
+                Commands.size() > 25 ? Commands.size() - 25 : 0;
+            float y = 50.0f;
+            for (std::size_t i = firstCommand; i < Commands.size(); ++i) {
+                printText(20.0f, y, Commands[i].c_str());
+                y += 20.0f;
+            }
         }
+
+    private:
+        std::vector<std::string> pendingCommands;
     };

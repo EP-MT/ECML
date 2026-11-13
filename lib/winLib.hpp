@@ -3,4 +3,7 @@
 #include <vector>
 #include <windows.h>
 #include <string>
+#include <functional>
+#include <iostream>
+#include <vector>
 #include "stb_easy_font.h"
